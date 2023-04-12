@@ -40,14 +40,18 @@ public class AppAuthConfiguration {
     @NonNull
     private final ConnectionBuilder mConnectionBuilder;
 
+    private final boolean mSkipIdTokenValidation;
+
     private final boolean mSkipIssuerHttpsCheck;
 
     private AppAuthConfiguration(
             @NonNull BrowserMatcher browserMatcher,
             @NonNull ConnectionBuilder connectionBuilder,
+            Boolean skipIdTokenValidation,
             Boolean skipIssuerHttpsCheck) {
         mBrowserMatcher = browserMatcher;
         mConnectionBuilder = connectionBuilder;
+        mSkipIdTokenValidation = skipIdTokenValidation;
         mSkipIssuerHttpsCheck = skipIssuerHttpsCheck;
     }
 
@@ -68,6 +72,15 @@ public class AppAuthConfiguration {
         return mConnectionBuilder;
     }
 
+
+    /**
+     * Returns <code>true</code> if ID token validation is disabled, otherwise
+     * <code>false</code>.
+     *
+     * @see Builder#setSkipIdTokenValidation(Boolean)
+     */
+    public boolean getSkipIdTokenValidation() { return mSkipIdTokenValidation; }
+
     /**
      * Returns <code>true</code> if issuer https validation is disabled, otherwise
      * <code>false</code>.
@@ -83,6 +96,7 @@ public class AppAuthConfiguration {
 
         private BrowserMatcher mBrowserMatcher = AnyBrowserMatcher.INSTANCE;
         private ConnectionBuilder mConnectionBuilder = DefaultConnectionBuilder.INSTANCE;
+        private boolean mSkipIdTokenValidation;
         private boolean mSkipIssuerHttpsCheck;
         private boolean mSkipNonceVerification;
 
@@ -109,6 +123,17 @@ public class AppAuthConfiguration {
         }
 
         /**
+         * Disables validation for the ID token.
+         *
+         * <p>NOTE: Disabling ID token validation implies the app is running against an
+         * insecure environment. Enabling this option is only recommended for testing purposes.
+         */
+        public Builder setSkipIdTokenValidation(Boolean skipIdTokenValidation) {
+            mSkipIdTokenValidation = skipIdTokenValidation;
+            return this;
+        }
+
+        /**
          * Disables https validation for the issuer identifier.
          *
          * <p>NOTE: Disabling issuer https validation implies the app is running against an
@@ -127,6 +152,7 @@ public class AppAuthConfiguration {
             return new AppAuthConfiguration(
                 mBrowserMatcher,
                 mConnectionBuilder,
+                mSkipIdTokenValidation,
                 mSkipIssuerHttpsCheck
             );
         }

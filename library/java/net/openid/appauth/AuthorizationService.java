@@ -14,8 +14,6 @@
 
 package net.openid.appauth;
 
-import static net.openid.appauth.Preconditions.checkNotNull;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -32,6 +30,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.util.Map;
+
 import net.openid.appauth.AuthorizationException.GeneralErrors;
 import net.openid.appauth.AuthorizationException.RegistrationRequestErrors;
 import net.openid.appauth.AuthorizationException.TokenRequestErrors;
@@ -42,15 +47,11 @@ import net.openid.appauth.browser.CustomTabManager;
 import net.openid.appauth.connectivity.ConnectionBuilder;
 import net.openid.appauth.internal.Logger;
 import net.openid.appauth.internal.UriUtil;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
-import java.util.Map;
+import static net.openid.appauth.Preconditions.checkNotNull;
 
 
 /**
@@ -506,6 +507,7 @@ public class AuthorizationService {
                 mClientConfiguration.getConnectionBuilder(),
                 SystemClock.INSTANCE,
                 callback,
+                mClientConfiguration.getSkipIdTokenValidation(),
                 mClientConfiguration.getSkipIssuerHttpsCheck())
                 .execute();
     }
@@ -584,6 +586,7 @@ public class AuthorizationService {
         private final ConnectionBuilder mConnectionBuilder;
         private TokenResponseCallback mCallback;
         private Clock mClock;
+        private boolean mSkipIdTokenValidation;
         private boolean mSkipIssuerHttpsCheck;
 
         private AuthorizationException mException;
@@ -593,12 +596,14 @@ public class AuthorizationService {
                          @NonNull ConnectionBuilder connectionBuilder,
                          Clock clock,
                          TokenResponseCallback callback,
+                         Boolean skipIdTokenValidation,
                          Boolean skipIssuerHttpsCheck) {
             mRequest = request;
             mClientAuthentication = clientAuthentication;
             mConnectionBuilder = connectionBuilder;
             mClock = clock;
             mCallback = callback;
+            mSkipIdTokenValidation = skipIdTokenValidation;
             mSkipIssuerHttpsCheck = skipIssuerHttpsCheck;
         }
 
@@ -706,15 +711,17 @@ public class AuthorizationService {
                     return;
                 }
 
-                try {
-                    idToken.validate(
+                if (!mSkipIdTokenValidation) {
+                    try {
+                        idToken.validate(
                             mRequest,
                             mClock,
                             mSkipIssuerHttpsCheck
-                    );
-                } catch (AuthorizationException ex) {
-                    mCallback.onTokenRequestCompleted(null, ex);
-                    return;
+                        );
+                    } catch (AuthorizationException ex) {
+                        mCallback.onTokenRequestCompleted(null, ex);
+                        return;
+                    }
                 }
             }
             Logger.debug("Token exchange with %s completed",
