@@ -714,9 +714,9 @@ public class AuthorizationService {
                 if (!mSkipIdTokenValidation) {
                     try {
                         idToken.validate(
-                            mRequest,
-                            mClock,
-                            mSkipIssuerHttpsCheck
+                                mRequest,
+                                mClock,
+                                mSkipIssuerHttpsCheck
                         );
                     } catch (AuthorizationException ex) {
                         mCallback.onTokenRequestCompleted(null, ex);

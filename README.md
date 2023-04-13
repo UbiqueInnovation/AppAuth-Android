@@ -5,6 +5,12 @@
 [![Build Status](https://github.com/openid/AppAuth-Android/actions/workflows/build.yml/badge.svg)](https://github.com/openid/AppAuth-Android/actions/workflows/build.yml)
 [![codecov.io](https://codecov.io/github/openid/AppAuth-Android/coverage.svg?branch=master)](https://codecov.io/github/openid/AppAuth-Android?branch=master)
 
+## Ubique Fork
+This repository has been forked by Ubique in order to include the following changes:
+* Add option to disable the ID token validation step. This is due to the [Microsoft IDP organizations discovery URL](https://login.microsoftonline.com/organizations/v2.0/.well-known/openid-configuration) containing a `{tenantid}` placeholder that fails the validation
+
+***
+
 AppAuth for Android is a client SDK for communicating with
 [OAuth 2.0](https://tools.ietf.org/html/rfc6749) and
 [OpenID Connect](http://openid.net/specs/openid-connect-core-1_0.html) providers.
@@ -261,7 +267,7 @@ this redirect URI.
 
 We recommend using a custom scheme based redirect URI (i.e. those of form
 `my.scheme:/path`), as this is the most widely supported across all versions of
-Android. To avoid conflicts with other apps, it is recommended to configure a 
+Android. To avoid conflicts with other apps, it is recommended to configure a
 distinct scheme using "reverse domain name notation". This can either match
 your service web domain (in reverse) e.g. `com.example.service` or your package
 name `com.example.app` or be something completely new as long as it's distinct

@@ -31,11 +31,11 @@ try {
     project.ext.versionName = grgit.describe()
     project.ext.versionDate = lastCommit.getDate()
     if (project.ext.versionName == null) {
-        project.ext.versionName = 'DEV'
+        project.ext.versionName = System.getenv('ARTIFACT_VERSION_NAME') ?: 'DEV'
     }
 } catch (Exception ignored) {
     project.ext.versionNum = 1
-    project.ext.versionName = 'DEV'
+    project.ext.versionName = System.getenv('ARTIFACT_VERSION_NAME') ?: 'DEV'
     project.ext.versionDate = new Date()
 }
 

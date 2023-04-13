@@ -80,11 +80,11 @@ publishing {
     }
     repositories {
         maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            name = "ubique"
+            url = System.getenv('UB_ARTIFACTORY_URL_ANDROID') ?: "$ubiqueMavenUrl"
             credentials {
-                username project.hasProperty('ossrhUsername') ? ossrhUsername : ''
-                password project.hasProperty('ossrhPassword') ? ossrhPassword : ''
+                username System.getenv('UB_ARTIFACTORY_USER') ?: "$ubiqueMavenUser"
+                password System.getenv('UB_ARTIFACTORY_PASSWORD') ?: "$ubiqueMavenPass"
             }
         }
     }
