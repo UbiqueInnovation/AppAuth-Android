@@ -1,26 +1,20 @@
 package net.openid.appauth;
 
-import static net.openid.appauth.TestValues.TEST_APP_REDIRECT_URI;
-import static net.openid.appauth.TestValues.TEST_ID_TOKEN;
-import static net.openid.appauth.TestValues.TEST_STATE;
-import static net.openid.appauth.TestValues.getTestServiceConfig;
-
 import android.net.Uri;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static org.junit.Assert.*;
+import static net.openid.appauth.TestValues.*;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 16)
@@ -58,6 +52,27 @@ public class EndSessionRequestTest {
     @Test(expected = IllegalArgumentException.class)
     public void testIdTokenHint_empty() {
         mRequestBuilder.setIdTokenHint("").build();
+    }
+
+    /* ******************************** client_id *********************************************/
+
+    @Test
+    public void testClientId_unspecified() {
+        EndSessionRequest request = mRequestBuilder.build();
+        assertThat(request.clientId).isNull();
+    }
+
+    @Test
+    public void testClientId() {
+        EndSessionRequest request = mRequestBuilder
+            .setClientId(TEST_CLIENT_ID)
+            .build();
+        assertThat(request.clientId).isEqualTo(TEST_CLIENT_ID);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testClientId_empty() {
+        mRequestBuilder.setClientId("").build();
     }
 
     /* *************************** post_logout_redirect_uri ***************************************/

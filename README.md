@@ -18,6 +18,12 @@ This can be done by setting the following option on the `AppAuthConfiguration`:
 val config = AppAuthConfiguration.Builder().setSkipIdTokenValidation(true).build()
 ```
 
+### EndSessionRequest support for client ID
+Add built-in support for the `client_id` parameter in the `EndSessionRequest`. This removes the need to set it via `setAdditionalParameter`
+```kotlin
+val request = EndSessionRequest.Builder(configuration).setClientId(clientId).build()
+```
+
 ***
 
 AppAuth for Android is a client SDK for communicating with
