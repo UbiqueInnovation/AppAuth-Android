@@ -14,25 +14,22 @@
 
 package net.openid.appauth;
 
-import static net.openid.appauth.AdditionalParamsProcessor.builtInParams;
-import static net.openid.appauth.AdditionalParamsProcessor.checkAdditionalParams;
-import static net.openid.appauth.Preconditions.checkNotNull;
-import static net.openid.appauth.Preconditions.checkNullOrNotEmpty;
-
 import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import java.util.*;
+
 import net.openid.appauth.internal.UriUtil;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import static net.openid.appauth.AdditionalParamsProcessor.builtInParams;
+import static net.openid.appauth.AdditionalParamsProcessor.checkAdditionalParams;
+import static net.openid.appauth.Preconditions.checkNotNull;
+import static net.openid.appauth.Preconditions.checkNullOrNotEmpty;
 
 /**
  * An OpenID end session request.
@@ -46,6 +43,9 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
     static final String PARAM_ID_TOKEN_HINT = "id_token_hint";
 
     @VisibleForTesting
+    static final String PARAM_CLIENT_ID = "client_id";
+
+    @VisibleForTesting
     static final String PARAM_POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
 
     @VisibleForTesting
@@ -56,12 +56,14 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
 
     private static final Set<String> BUILT_IN_PARAMS = builtInParams(
             PARAM_ID_TOKEN_HINT,
+            PARAM_CLIENT_ID,
             PARAM_POST_LOGOUT_REDIRECT_URI,
             PARAM_STATE,
             PARAM_UI_LOCALES);
 
     private static final String KEY_CONFIGURATION = "configuration";
     private static final String KEY_ID_TOKEN_HINT = "id_token_hint";
+    private static final String KEY_CLIENT_ID = "client_id";
     private static final String KEY_POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
     private static final String KEY_STATE = "state";
     private static final String KEY_UI_LOCALES = "ui_locales";
@@ -91,6 +93,15 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
      */
     @Nullable
     public final String idTokenHint;
+
+    /**
+     * The client identifier.
+     *
+     * @see "OpenID Connect RP-Initiated Logout 1.0 - draft 01
+     * <https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RPLogout>"
+     */
+    @Nullable
+    public final String clientId;
 
     /**
      * The client's redirect URI.
@@ -147,6 +158,9 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         private String mIdTokenHint;
 
         @Nullable
+        private String mClientId;
+
+        @Nullable
         private Uri mPostLogoutRedirectUri;
 
         @Nullable
@@ -179,6 +193,13 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         @NonNull
         public Builder setIdTokenHint(@Nullable String idTokenHint) {
             mIdTokenHint = checkNullOrNotEmpty(idTokenHint, "idTokenHint must not be empty");
+            return this;
+        }
+
+        /** @see EndSessionRequest#clientId */
+        @NonNull
+        public Builder setClientId(@Nullable String clientId) {
+            mClientId = checkNullOrNotEmpty(clientId, "clientId must not be empty");
             return this;
         }
 
@@ -238,6 +259,7 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
             return new EndSessionRequest(
                 mConfiguration,
                 mIdTokenHint,
+                mClientId,
                 mPostLogoutRedirectUri,
                 mState,
                 mUiLocales,
@@ -248,12 +270,14 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
     private EndSessionRequest(
             @NonNull AuthorizationServiceConfiguration configuration,
             @Nullable String idTokenHint,
+            @Nullable String clientId,
             @Nullable Uri postLogoutRedirectUri,
             @Nullable String state,
             @Nullable String uiLocales,
             @NonNull Map<String, String> additionalParameters) {
         this.configuration = configuration;
         this.idTokenHint = idTokenHint;
+        this.clientId = clientId;
         this.postLogoutRedirectUri = postLogoutRedirectUri;
         this.state = state;
         this.uiLocales = uiLocales;
@@ -275,6 +299,7 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         Uri.Builder uriBuilder = configuration.endSessionEndpoint.buildUpon();
 
         UriUtil.appendQueryParameterIfNotNull(uriBuilder, PARAM_ID_TOKEN_HINT, idTokenHint);
+        UriUtil.appendQueryParameterIfNotNull(uriBuilder, PARAM_CLIENT_ID, clientId);
         UriUtil.appendQueryParameterIfNotNull(uriBuilder, PARAM_STATE, state);
         UriUtil.appendQueryParameterIfNotNull(uriBuilder, PARAM_UI_LOCALES, uiLocales);
 
@@ -299,6 +324,7 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         JSONObject json = new JSONObject();
         JsonUtil.put(json, KEY_CONFIGURATION, configuration.toJson());
         JsonUtil.putIfNotNull(json, KEY_ID_TOKEN_HINT, idTokenHint);
+        JsonUtil.putIfNotNull(json, KEY_CLIENT_ID, clientId);
         JsonUtil.putIfNotNull(json, KEY_POST_LOGOUT_REDIRECT_URI, postLogoutRedirectUri);
         JsonUtil.putIfNotNull(json, KEY_STATE, state);
         JsonUtil.putIfNotNull(json, KEY_UI_LOCALES, uiLocales);
@@ -328,6 +354,7 @@ public class EndSessionRequest implements AuthorizationManagementRequest {
         return new EndSessionRequest(
                 AuthorizationServiceConfiguration.fromJson(json.getJSONObject(KEY_CONFIGURATION)),
                 JsonUtil.getStringIfDefined(json, KEY_ID_TOKEN_HINT),
+                JsonUtil.getStringIfDefined(json, KEY_CLIENT_ID),
                 JsonUtil.getUriIfDefined(json, KEY_POST_LOGOUT_REDIRECT_URI),
                 JsonUtil.getStringIfDefined(json, KEY_STATE),
                 JsonUtil.getStringIfDefined(json, KEY_UI_LOCALES),

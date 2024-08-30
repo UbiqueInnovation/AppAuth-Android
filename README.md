@@ -7,7 +7,22 @@
 
 ## Ubique Fork
 This repository has been forked by Ubique in order to include the following changes:
-* Add option to disable the ID token validation step. This is due to the [Microsoft IDP organizations discovery URL](https://login.microsoftonline.com/organizations/v2.0/.well-known/openid-configuration) containing a `{tenantid}` placeholder that fails the validation
+
+### Publishing to Ubique Artifactory
+The official `.github/workflows/build.yml` was replaced with our own `maven-publish-tags.yml` workflow, which publishes the artifact to our internal Artifactory.
+
+### Skip ID token validation
+Add option to disable the ID token validation step. This is due to the [Microsoft IDP organizations discovery URL](https://login.microsoftonline.com/organizations/v2.0/.well-known/openid-configuration) containing a `{tenantid}` placeholder that fails the validation.
+This can be done by setting the following option on the `AppAuthConfiguration`:
+```kotlin
+val config = AppAuthConfiguration.Builder().setSkipIdTokenValidation(true).build()
+```
+
+### EndSessionRequest support for client ID
+Add built-in support for the `client_id` parameter in the `EndSessionRequest`. This removes the need to set it via `setAdditionalParameter`
+```kotlin
+val request = EndSessionRequest.Builder(configuration).setClientId(clientId).build()
+```
 
 ***
 
